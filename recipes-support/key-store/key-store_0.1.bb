@@ -56,12 +56,12 @@ do_install() {
         install -m 0644 "$f" "${D}${RPM_KEY_DIR}"
     done
 
-    key_dir="${@uks_rpm_keys_dir(d)}"
-    for f in `ls $key_dir/RPM-GPG-KEY-* 2>/dev/null`; do
-        [ ! -f "$f" ] && continue
-
-        install -m 0644 "$f" "${D}${RPM_KEY_DIR}"
-    done
+    # FIXME: currently the user rpm pubkey is not supported.
+    #key_dir="${@uks_rpm_keys_dir(d)}"
+    #for f in `ls $key_dir/RPM-GPG-KEY-* 2>/dev/null`; do
+    #    [ ! -f "$f" ] && continue
+    #install -m 0644 "$f" "${D}${RPM_KEY_DIR}"
+    #done
 
     install -d "${D}${KEY_DIR}"
     key_dir="${@uks_ima_keys_dir(d)}"
