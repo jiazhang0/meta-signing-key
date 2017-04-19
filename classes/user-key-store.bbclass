@@ -17,6 +17,7 @@ def uks_signing_model(d):
     return d.getVar('SIGNING_MODEL', True)
 
 def uks_ima_keys_dir(d):
+    set_keys_dir('IMA', d)
     return d.getVar('IMA_KEYS_DIR', True) + '/'
 
 def uks_rpm_keys_dir(d):
