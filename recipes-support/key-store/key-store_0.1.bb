@@ -20,9 +20,6 @@ PACKAGES =+ " \
 # For RPM verification
 PACKAGES_DYNAMIC += "${PN}-rpm-pubkey"
 RPM_KEY_DIR = "${sysconfdir}/pki/rpm-gpg"
-FILES_${PN}-rpm-pubkey = "${RPM_KEY_DIR}/RPM-GPG-KEY-*"
-CONFFILES_${PN}-rpm-pubkey = "${RPM_KEY_DIR}/RPM-GPG-KEY-*"
-RDEPENDS_${PN}-rpm-pubkey += "rpm"
 
 # Note IMA private key is not available if user key signing model used.
 PACKAGES_DYNAMIC += "${PN}-ima-privkey"
@@ -41,6 +38,12 @@ python () {
     d.setVar('PACKAGES_prepend', pn + ' ')
     d.setVar('FILES_' + pn, d.getVar('IMA_PRIV_KEY', True))
     d.setVar('CONFFILES_' + pn, d.getVar('IMA_PRIV_KEY', True))
+
+    pn = d.getVar('PN', True) + '-rpm-pubkey'
+    d.setVar('PACKAGES_prepend', pn + ' ')
+    d.setVar('FILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + '/RPM-GPG-KEY-*'))
+    d.setVar('CONFFILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + 'RPM-GPG-KEY-*'))
+    d.appendVar('RDEPENDS_' + pn, ' rpm')
 }
 
 do_install() {
