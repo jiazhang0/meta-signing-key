@@ -14,11 +14,11 @@ S = "${WORKDIR}"
 ALLOW_EMPTY_${PN} = "1"
 
 PACKAGES =+ " \
-             ${PN}-rpm-pubkey \
              ${PN}-ima-pubkey \
             "
 
 # For RPM verification
+PACKAGES_DYNAMIC += "${PN}-rpm-pubkey"
 RPM_KEY_DIR = "${sysconfdir}/pki/rpm-gpg"
 FILES_${PN}-rpm-pubkey = "${RPM_KEY_DIR}/RPM-GPG-KEY-*"
 CONFFILES_${PN}-rpm-pubkey = "${RPM_KEY_DIR}/RPM-GPG-KEY-*"
@@ -26,13 +26,9 @@ RDEPENDS_${PN}-rpm-pubkey += "rpm"
 
 # Note IMA private key is not available if user key signing model used.
 PACKAGES_DYNAMIC += "${PN}-ima-privkey"
-
 KEY_DIR = "${sysconfdir}/keys"
-
-# For IMA appraisal
 IMA_PRIV_KEY = "${KEY_DIR}/privkey_evm.pem"
 IMA_PUB_KEY = "${KEY_DIR}/pubkey_evm.pem"
-
 FILES_${PN}-ima-pubkey = "${IMA_PUB_KEY}"
 CONFFILES_${PN}-ima-pubkey = "${IMA_PUB_KEY}"
 
@@ -56,12 +52,14 @@ do_install() {
         install -m 0644 "$f" "${D}${RPM_KEY_DIR}"
     done
 
-    # FIXME: currently the user rpm pubkey is not supported.
-    #key_dir="${@uks_rpm_keys_dir(d)}"
-    #for f in `ls $key_dir/RPM-GPG-KEY-* 2>/dev/null`; do
-    #    [ ! -f "$f" ] && continue
-    #install -m 0644 "$f" "${D}${RPM_KEY_DIR}"
-    #done
+    key_dir="${@uks_rpm_keys_dir(d)}"
+    if [ -n "$key_dir" ]; then
+        for f in `ls $key_dir/RPM-GPG-KEY-* 2>/dev/null`; do
+            [ ! -s "$f" ] && continue
+
+            install -m 0644 "$f" "${D}${RPM_KEY_DIR}"
+        done
+    fi
 
     install -d "${D}${KEY_DIR}"
     key_dir="${@uks_ima_keys_dir(d)}"

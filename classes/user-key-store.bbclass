@@ -21,6 +21,10 @@ def uks_ima_keys_dir(d):
     return d.getVar('IMA_KEYS_DIR', True) + '/'
 
 def uks_rpm_keys_dir(d):
+    # FIXME: currently the user rpm pubkey is not supported.
+    if uks_signing_model(d) != 'sample':
+        return ''
+
     return d.getVar('RPM_KEYS_DIR', True) + '/'
 
 def sign_efi_image(key, cert, input, output, d):
