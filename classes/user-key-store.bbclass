@@ -2,7 +2,13 @@
 # Copyright (C) 2016-2017 Wind River Systems, Inc.
 #
 
-DEPENDS_append_class-target = " sbsigntool-native libsign-native"
+DEPENDS_append_class-target += " \
+    sbsigntool-native \
+    libsign-native \
+    openssl-native \
+    efitools-native \
+"
+
 USER_KEY_SHOW_VERBOSE = "1"
 
 UEFI_SB = '${@bb.utils.contains("DISTRO_FEATURES", "uefi-secure-boot", "1", "0", d)}'
@@ -11,7 +17,7 @@ IMA = '${@bb.utils.contains("DISTRO_FEATURES", "ima", "1", "0", d)}'
 
 def vprint(str, d):
     if d.getVar('USER_KEY_SHOW_VERBOSE', True) == '1':
-        print(str)
+        bb.note(str)
 
 def uks_signing_model(d):
     return d.getVar('SIGNING_MODEL', True)
@@ -21,7 +27,7 @@ def uks_ima_keys_dir(d):
     return d.getVar('IMA_KEYS_DIR', True) + '/'
 
 def uks_rpm_keys_dir(d):
-    # FIXME: currently the user rpm pubkey is not supported.
+    # XXX: currently the user rpm pubkey is not supported.
     if uks_signing_model(d) != 'sample':
         return ''
 
@@ -408,62 +414,20 @@ def set_keys_dir(name, d):
     if d.getVar(name + '_KEYS_DIR', True) == d.getVar('SAMPLE_' + name + '_KEYS_DIR', True):
         d.setVar(name + '_KEYS_DIR', d.getVar('DEPLOY_DIR_IMAGE', True) + '/user-keys/' + name.lower() + '_keys')
 
-# Check and/or generate the user keys
-python do_check_user_keys_class-target () {
-    vprint('Status before do_check_user_keys():', d)
-    vprint('  UEFI_SB: ${UEFI_SB}', d)
-    vprint('  MOK_SB: ${MOK_SB}', d)
-    vprint('  IMA: ${IMA}', d)
-    vprint('  SIGNING_MODEL: ${SIGNING_MODEL}', d)
-    vprint('  MOK_SB_KEYS_DIR: ${MOK_SB_KEYS_DIR}', d)
-    vprint('  UEFI_SB_KEYS_DIR: ${UEFI_SB_KEYS_DIR}', d)
-    vprint('  IMA_KEYS_DIR: ${IMA_KEYS_DIR}', d)
-    vprint('  RPM_KEYS_DIR: ${RPM_KEYS_DIR}', d)
-    vprint('  SAMPLE_MOK_SB_KEYS_DIR: ${SAMPLE_MOK_SB_KEYS_DIR}', d)
-    vprint('  SAMPLE_UEFI_SB_KEYS_DIR: ${SAMPLE_UEFI_SB_KEYS_DIR}', d)
-    vprint('  SAMPLE_IMA_KEYS_DIR: ${SAMPLE_IMA_KEYS_DIR}', d)
-    vprint('  SAMPLE_RPM_KEYS_DIR: ${SAMPLE_RPM_KEYS_DIR}', d)
-
+python () {
     # XXX: the user key for rpm signing is necessary but not required.
     for _ in ('UEFI_SB', 'MOK_SB', 'IMA'):
-        # Intend to use user key?
         if d.getVar(_, True) != "1":
             continue
 
-        if "${SIGNING_MODEL}" == "sample":
+        # Intend to use user key?
+        if d.getVar('SIGNING_MODEL', True) == "sample":
             deploy_sample_keys(_, d)
             continue
-        elif "${SIGNING_MODEL}" != "user":
+        elif d.getVar('SIGNING_MODEL', True) != "user":
             continue
 
-        # Check if the generation for user key is required. If so,
-        # place the generated user keys to export/images/user-keys/.
-        if d.getVar(_ + '_KEYS_DIR', True) == d.getVar('SAMPLE_' + _ + '_KEYS_DIR', True):
-            d.setVar(_ + '_KEYS_DIR', '${DEPLOY_DIR_IMAGE}' + '/user-keys/' + _.lower() + '_keys')
-
-            if sanity_check_user_keys(_, False, d) == False:
-                create_user_keys(_, d)
-        else:
-            # Raise error if not specifying the location of the
-            # user keys.
-            sanity_check_user_keys(_, True, d)
-
-    vprint('Results after do_check_user_keys():', d)
-    vprint('  MOK_SB_KEYS_DIR: %s' % d.getVar('MOK_SB_KEYS_DIR', True), d)
-    vprint('  UEFI_SB_KEYS_DIR: %s' % d.getVar('UEFI_SB_KEYS_DIR', True), d)
-    vprint('  IMA_KEYS_DIR: %s' % d.getVar('IMA_KEYS_DIR', True), d)
+        # Raise error if not specifying the location of the
+        # user keys.
+        sanity_check_user_keys(_, True, d)
 }
-
-python do_check_user_keys () {
-}
-
-addtask check_user_keys before do_configure after do_patch
-do_check_user_keys[lockfiles] = "${TMPDIR}/check_user_keys.lock"
-
-# DEPENDS doesn't take effect for the tasks *BEFORE* do_configure,
-# but we really need it in do_check_user_keys() which is called
-# prior to do_configure().
-do_check_user_keys[depends] += "\
-    openssl-native:do_populate_sysroot \
-    efitools-native:do_populate_sysroot \
-"
