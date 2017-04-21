@@ -97,12 +97,6 @@ def sb_sign(input, output, d):
     elif uks_signing_model(d) == 'edss':
         edss_sign_efi_image(input, output, d)
 
-def shim_sb_sign(input, output, d):
-    if uks_signing_model(d) in ('sample', 'user'):
-        uefi_sb_sign(input, output, d)
-    elif uks_signing_model(d) == 'edss':
-        edss_sign_efi_image(input, output, d)
-
 def check_mok_sb_user_keys(d):
     dir = mok_sb_keys_dir(d)
 
@@ -121,20 +115,6 @@ def mok_sb_sign(input, output, d):
 
     _ = mok_sb_keys_dir(d)
     sign_efi_image(_ + 'vendor_cert.key', _ + 'vendor_cert.pem', input, output, d)
-
-# Prepare signing keys for shim
-def shim_prepare_sb_keys(d):
-    # For UEFI_SB, shim is not built
-    if d.getVar('MOK_SB', True) != '1':
-        return
-
-    path = create_mok_vendor_dbx(d)
-
-    # Prepare shim_cert and vendor_cert.
-    dir = mok_sb_keys_dir(d)
-    import shutil
-    shutil.copyfile(dir + 'shim_cert.pem', d.getVar('S', True) + '/shim.crt')
-    pem2der(dir + 'vendor_cert.pem', d.getVar('WORKDIR', True) + '/vendor_cert.cer', d)
 
 def sel_sign(key, cert, input, d):
     import bb.process
