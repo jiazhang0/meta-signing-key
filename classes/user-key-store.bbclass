@@ -335,33 +335,34 @@ def create_user_keys(name, d):
     vprint('Creating the user keys for %s ...' % name, d)
     bb.build.exec_func('create_' + name.lower() + '_user_keys', d)
 
-
-deploy_uefi_sb_sample_keys() {
-    local deploy_dir="${DEPLOY_DIR_IMAGE}/sample-keys/uefi_sb_keys"
-
-    install -d "$deploy_dir"
-
-    cp -a "${SAMPLE_UEFI_SB_KEYS_DIR}"/* "$deploy_dir"
-}
-
-deploy_mok_sb_sample_keys() {
-    local deploy_dir="${DEPLOY_DIR_IMAGE}/sample-keys/mok_sb_keys"
+deploy_uefi_sb_keys() {
+    local deploy_dir="${DEPLOY_KEYS_DIR}/uefi_sb_keys"
 
     install -d "$deploy_dir"
 
-    cp -a "${SAMPLE_MOK_SB_KEYS_DIR}"/* "$deploy_dir"
+    cp -a "${UEFI_SB_KEYS_DIR}"/* "$deploy_dir"
 }
 
-deploy_ima_sample_keys() {
-    local deploy_dir="${DEPLOY_DIR_IMAGE}/sample-keys/ima_keys"
+deploy_mok_sb_keys() {
+    local deploy_dir="${DEPLOY_KEYS_DIR}/mok_sb_keys"
 
     install -d "$deploy_dir"
 
-    cp -a "${SAMPLE_IMA_KEYS_DIR}"/* "$deploy_dir"
+    cp -a "${MOK_SB_KEYS_DIR}"/* "$deploy_dir"
 }
 
-def deploy_sample_keys(name, d):
-    bb.build.exec_func('deploy_' + name.lower() + '_sample_keys', d)
+deploy_ima_keys() {
+    local deploy_dir="${DEPLOY_KEYS_DIR}/ima_keys"
+
+    install -d "$deploy_dir"
+
+    cp -a "${IMA_KEYS_DIR}"/* "$deploy_dir"
+}
+
+def deploy_keys(name, d):
+    d.setVar('DEPLOY_KEYS_DIR', d.getVar('DEPLOY_DIR_IMAGE', True) + '/' + \
+             d.getVar('SIGNING_MODEL', True) + '-keys')
+    bb.build.exec_func('deploy_' + name.lower() + '_keys', d)
 
 def sanity_check_user_keys(name, may_exit, d):
     vprint('Checking the user keys for %s ...' % name, d)
@@ -401,13 +402,12 @@ python () {
             continue
 
         # Intend to use user key?
-        if d.getVar('SIGNING_MODEL', True) == "sample":
-            deploy_sample_keys(_, d)
-            continue
-        elif d.getVar('SIGNING_MODEL', True) != "user":
+        if not d.getVar('SIGNING_MODEL', True) in ("sample", "user"):
             continue
 
         # Raise error if not specifying the location of the
         # user keys.
         sanity_check_user_keys(_, True, d)
+
+        deploy_keys(_, d)
 }
