@@ -371,8 +371,6 @@ def deploy_keys(name, d):
     bb.build.exec_func('deploy_' + name.lower() + '_keys', d)
 
 def sanity_check_user_keys(name, may_exit, d):
-    vprint('Checking the user keys for %s ...' % name, d)
-
     if name == 'UEFI_SB':
         _ = check_uefi_sb_user_keys(d)
     elif name == 'MOK_SB':
@@ -388,8 +386,6 @@ def sanity_check_user_keys(name, may_exit, d):
             raise bb.build.FuncFailed('ERROR: Unable to find user key for %s ...' % name)
 
         vprint('Failed to check the user keys for %s ...' % name, d)
-    else:
-        vprint('Found the user keys for %s ...' % name, d)
 
     return _
 
