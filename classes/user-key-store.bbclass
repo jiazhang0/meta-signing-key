@@ -338,25 +338,31 @@ def create_user_keys(name, d):
 deploy_uefi_sb_keys() {
     local deploy_dir="${DEPLOY_KEYS_DIR}/uefi_sb_keys"
 
-    install -d "$deploy_dir"
+    if [ x"${UEFI_SB_KEYS_DIR}" != x"$deploy_dir" ]; then
+        install -d "$deploy_dir"
 
-    cp -a "${UEFI_SB_KEYS_DIR}"/* "$deploy_dir"
+        cp -a "${UEFI_SB_KEYS_DIR}"/* "$deploy_dir"
+    fi
 }
 
 deploy_mok_sb_keys() {
     local deploy_dir="${DEPLOY_KEYS_DIR}/mok_sb_keys"
 
-    install -d "$deploy_dir"
+    if [ x"${MOK_SB_KEYS_DIR}" != x"$deploy_dir" ]; then
+        install -d "$deploy_dir"
 
-    cp -a "${MOK_SB_KEYS_DIR}"/* "$deploy_dir"
+        cp -a "${MOK_SB_KEYS_DIR}"/* "$deploy_dir"
+    fi
 }
 
 deploy_ima_keys() {
     local deploy_dir="${DEPLOY_KEYS_DIR}/ima_keys"
 
-    install -d "$deploy_dir"
+    if [ x"${IMA_KEYS_DIR}" != x"$deploy_dir" ]; then
+        install -d "$deploy_dir"
 
-    cp -a "${IMA_KEYS_DIR}"/* "$deploy_dir"
+        cp -a "${IMA_KEYS_DIR}"/* "$deploy_dir"
+    fi
 }
 
 def deploy_keys(name, d):
