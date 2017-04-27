@@ -49,5 +49,5 @@ meaning the following precautions:
   blacklist if any.
 
 For the details about UEFI secure boot and MOK secure boot, please refer
-to feature/uefi-secure-boot/README and feature/mok-secure-boot/README
+to feature/efi-secure-boot/README and feature/mok-secure-boot/README
 correspondingly.
