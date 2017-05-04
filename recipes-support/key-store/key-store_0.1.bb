@@ -41,8 +41,8 @@ python () {
 
     pn = d.getVar('PN', True) + '-rpm-pubkey'
     d.setVar('PACKAGES_prepend', pn + ' ')
-    d.setVar('FILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + '/RPM-GPG-KEY-*'))
-    d.setVar('CONFFILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + 'RPM-GPG-KEY-*'))
+    d.setVar('FILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + '/RPM-GPG-KEY-*', True))
+    d.setVar('CONFFILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + 'RPM-GPG-KEY-*', True))
     d.appendVar('RDEPENDS_' + pn, ' rpm')
 }
 
