@@ -11,10 +11,11 @@ contrary of the sample key. This document defines the definitions for
 the uses of various keys.
 
 If the user plans to create the user keys by self, please consider to
-construct a template or layer for the user key store, and place it to
-$project/tmp/deploy/images/*/user-keys/.
+construct a template or layer for the user key store. Eventually, the build
+system will copy the user key store to
+$project/tmp/deploy/images/*/user-keys/ for further use.
 
-The vital definitions include:
+The vital definitions include in template.conf:
 
 - SIGNING_MODEL := "user"
   Prohibit using the sample keys for signing the images.
@@ -51,3 +52,9 @@ meaning the following precautions:
 For the details about UEFI secure boot and MOK secure boot, please refer
 to feature/efi-secure-boot/README and feature/mok-secure-boot/README
 correspondingly.
+
+Example of template.conf
+------------------------
+SIGNING_MODEL = "user"
+UEFI_SB_KEYS_DIR = "<path_to_your_keystore>/uefi_sb_keys"
+MOK_SB_KEYS_DIR = "<path_to_your_keystore>/mok_sb_keys"
