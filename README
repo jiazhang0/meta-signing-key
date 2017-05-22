@@ -10,6 +10,25 @@ The user key in a general sense is able to be used in the product with
 contrary of the sample key. This document defines the definitions for
 the uses of various keys.
 
+In addition, the scripts/create-user-key-store.sh provides a reference
+to the creation of user key store, stored in such a layout:
+
+user-keys
+├── ima_keys
+│   ├── ima_privkey.pem
+│   └── ima_pubkey.pem
+├── mok_sb_keys
+│   ├── shim_cert.key
+│   ├── shim_cert.pem
+│   ├── vendor_cert.key
+│   └── vendor_cert.pem
+└── uefi_sb_keys
+    ├── DB.key
+    ├── KEK.key
+    ├── KEK.pem
+    ├── PK.key
+    └── PK.pem
+
 If the user plans to create the user keys by self, please consider to
 construct a template or layer for the user key store. Eventually, the build
 system will copy the user key store to
