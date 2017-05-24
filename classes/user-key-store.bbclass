@@ -12,7 +12,7 @@ DEPENDS_append_class-target += " \
 USER_KEY_SHOW_VERBOSE = "1"
 
 UEFI_SB = '${@bb.utils.contains("DISTRO_FEATURES", "efi-secure-boot", "1", "0", d)}'
-MOK_SB = '${@bb.utils.contains("DISTRO_FEATURES", "mok-secure-boot", "1", "0", d)}'
+MOK_SB = '${@bb.utils.contains("DISTRO_FEATURES", "efi-secure-boot", "1", "0", d)}'
 IMA = '${@bb.utils.contains("DISTRO_FEATURES", "ima", "1", "0", d)}'
 
 def vprint(str, d):
