@@ -341,7 +341,7 @@ deploy_uefi_sb_keys() {
     if [ x"${UEFI_SB_KEYS_DIR}" != x"$deploy_dir" ]; then
         install -d "$deploy_dir"
 
-        cp -a "${UEFI_SB_KEYS_DIR}"/* "$deploy_dir"
+        cp -af "${UEFI_SB_KEYS_DIR}"/* "$deploy_dir"
     fi
 }
 
@@ -351,7 +351,7 @@ deploy_mok_sb_keys() {
     if [ x"${MOK_SB_KEYS_DIR}" != x"$deploy_dir" ]; then
         install -d "$deploy_dir"
 
-        cp -a "${MOK_SB_KEYS_DIR}"/* "$deploy_dir"
+        cp -af "${MOK_SB_KEYS_DIR}"/* "$deploy_dir"
     fi
 }
 
@@ -361,7 +361,7 @@ deploy_ima_keys() {
     if [ x"${IMA_KEYS_DIR}" != x"$deploy_dir" ]; then
         install -d "$deploy_dir"
 
-        cp -a "${IMA_KEYS_DIR}"/* "$deploy_dir"
+        cp -af "${IMA_KEYS_DIR}"/* "$deploy_dir"
     fi
 }
 
