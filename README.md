@@ -1,6 +1,4 @@
-User Key Store
-==============
-
+### User Key Store
 The sample keys, by default, are used by build system to sign bootloader,
 kernel, IMA signature, RPM and so on. It is used for development and
 demonstration. The user must know what te risk is to use the sample
@@ -12,7 +10,7 @@ the uses of various keys.
 
 In addition, the scripts/create-user-key-store.sh provides a reference
 to the creation of user key store, stored in such a layout:
-
+```
 user-keys
 ├── ima_keys
 │   ├── ima_privkey.pem
@@ -28,33 +26,33 @@ user-keys
     ├── KEK.pem
     ├── PK.key
     └── PK.pem
-
+```
 If the user plans to create the user keys by self, please consider to
-construct a template or layer for the user key store. Eventually, the build
-system will copy the user key store to
-$project/tmp/deploy/images/*/user-keys/ for further use.
+define the necessary variables mentioned below in local.conf, or construct
+a layer for the user key store. Eventually, the build system will copy the
+user key store to `$project/tmp/deploy/images/*/user-keys/` for further use.
 
-The vital definitions include in template.conf:
+The vital definitions include:
 
-- SIGNING_MODEL := "user"
+- `SIGNING_MODEL := "user"`  
   Prohibit using the sample keys for signing the images.
 
-- UEFI_SB_KEYS_DIR := "<path>"
+- `UEFI_SB_KEYS_DIR := "<path>"`  
   Point to the location of user keys used for UEFI secure boot. If not defined,
   the user keys for UEFI secure boot will be automatically generated.
 
-- MOK_SB_KEYS_DIR := "<path>"
+- `MOK_SB_KEYS_DIR := "<path>"`  
   Point to the location of user keys used for MOK secure boot. Note that
   MOK secure boot is on top of UEFI secure boot so creating the user keys
   for MOK secure boot only will still introduce the security risk in your
   product. If not defined, the user keys for MOK secure boot will be
   automatically generated.
 
-- IMA_KEYS_DIR := "<path>"
+- `IMA_KEYS_DIR := "<path>"`  
   Point to the location of user keys used for IMA appraisal. If not defined,
   the user keys for IMA appraisal will be automatically generated.
 
-- USER_KEY_SHOW_VERBOSE = "1"
+- `USER_KEY_SHOW_VERBOSE = "1"`  
   Optional. Used to enable the verbose output for debugging purpose.
 
 To ensure a image signed by the untrustworthy sample key cannot be loaded, e.g,
@@ -69,11 +67,7 @@ meaning the following precautions:
   blacklist if any.
 
 For the details about UEFI secure boot and MOK secure boot, please refer
-to feature/efi-secure-boot/README and feature/mok-secure-boot/README
-correspondingly.
+to meta-efi-secure-boot/README.md.
 
-Example of template.conf
-------------------------
-SIGNING_MODEL = "user"
-UEFI_SB_KEYS_DIR = "<path_to_your_keystore>/uefi_sb_keys"
-MOK_SB_KEYS_DIR = "<path_to_your_keystore>/mok_sb_keys"
+### Reference
+[meta-efi-secure-boot](https://github.com/jiazhang0/meta-efi-secure-boot)
