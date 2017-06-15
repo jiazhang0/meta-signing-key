@@ -44,6 +44,7 @@ echo "KEYS_DIR: $KEYS_DIR"
 
 UEFI_SB_KEYS_DIR="$KEYS_DIR/uefi_sb_keys"
 MOK_SB_KEYS_DIR="$KEYS_DIR/mok_sb_keys"
+SYSTEM_KEYS_DIR="$KEYS_DIR/system_trusted_keys"
 IMA_KEYS_DIR="$KEYS_DIR/ima_keys"
 
 create_uefi_sb_user_keys() {
@@ -101,15 +102,28 @@ create_mok_sb_user_keys() {
         -keyout "$key_dir/vendor_cert.key" -out "$key_dir/vendor_cert.pem"
 }
 
+create_system_trusted_keys() {
+    local key_dir="$SYSTEM_KEYS_DIR"
+
+    [ ! -d "$key_dir" ] && mkdir -p "$key_dir"
+
+    openssl req -new -x509 -newkey rsa:2048 \
+        -sha256 -nodes -days 3650 \
+        -subj "/CN=System Trusted Certificate/" \
+        -keyout "$key_dir/system_trusted_key.key" \
+        -out "$key_dir/system_trusted_key.pem"
+}
+
 create_ima_user_keys() {
     local key_dir="$IMA_KEYS_DIR"
 
     [ ! -d "$key_dir" ] && mkdir -p "$key_dir"
 
-    openssl genrsa -out "$key_dir/ima_privkey.pem" 2048
-
-    openssl rsa -in "$key_dir/ima_privkey.pem" -pubout \
-        -out "$key_dir/ima_pubkey.pem"
+    openssl req -new -x509 -newkey rsa:2048 \
+        -sha256 -nodes -days 3650 \
+        -subj "/CN=IMA Trusted Certificate/" \
+        -keyout "$key_dir/x509_ima.key" \
+        -outform DER -out "$key_dir/x509_ima.der"
 }
 
 create_user_keys() {
@@ -118,6 +132,9 @@ create_user_keys() {
 
     echo "Creating the user keys for MOK Secure Boot"
     create_mok_sb_user_keys
+
+    echo "Creating the system trusted keys"
+    create_system_trusted_keys
 
     echo "Creating the user keys for IMA appraisal"
     create_ima_user_keys

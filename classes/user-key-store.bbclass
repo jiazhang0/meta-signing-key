@@ -14,6 +14,7 @@ USER_KEY_SHOW_VERBOSE = "1"
 UEFI_SB = '${@bb.utils.contains("DISTRO_FEATURES", "efi-secure-boot", "1", "0", d)}'
 MOK_SB = '${@bb.utils.contains("DISTRO_FEATURES", "efi-secure-boot", "1", "0", d)}'
 IMA = '${@bb.utils.contains("DISTRO_FEATURES", "ima", "1", "0", d)}'
+SYSTEM_TRUSTED = '1'
 
 def vprint(str, d):
     if d.getVar('USER_KEY_SHOW_VERBOSE', True) == '1':
@@ -21,6 +22,10 @@ def vprint(str, d):
 
 def uks_signing_model(d):
     return d.getVar('SIGNING_MODEL', True)
+
+def uks_system_trusted_keys_dir(d):
+    set_keys_dir('SYSTEM_TRUSTED', d)
+    return d.getVar('SYSTEM_TRUSTED_KEYS_DIR', True) + '/'
 
 def uks_ima_keys_dir(d):
     set_keys_dir('IMA', d)
@@ -147,10 +152,22 @@ def uks_sel_sign(input, d):
 def check_ima_user_keys(d):
     dir = uks_ima_keys_dir(d)
 
-    for _ in ('ima_pubkey', 'ima_privkey'):
-        if not os.path.exists(dir + _ + '.pem'):
+    for _ in ('key', 'der'):
+        if not os.path.exists(dir + 'x509_ima.' + _):
             vprint("%s.pem is unavailable" % _, d)
             return False
+
+def check_system_trusted_keys(d):
+    dir = uks_system_trusted_keys_dir(d)
+
+    _ = 'system_trusted_key'
+    if not os.path.exists(dir + _ + '.key'):
+        vprint("%s.key is unavailable" % _, d)
+        return False
+
+    if not os.path.exists(dir + _ + '.pem'):
+        vprint("%s.pem is unavailable" % _, d)
+        return False
 
 # Convert the PEM to DER format.
 def pem2der(input, output, d):
@@ -365,6 +382,16 @@ deploy_ima_keys() {
     fi
 }
 
+deploy_system_trusted_keys() {
+    local deploy_dir="${DEPLOY_KEYS_DIR}/system_trusted_keys"
+
+    if [ x"${SYSTEM_TRUSTED_KEYS_DIR}" != x"$deploy_dir" ]; then
+        install -d "$deploy_dir"
+
+        cp -af "${SYSTEM_TRUSTED_KEYS_DIR}"/* "$deploy_dir"
+    fi
+}
+
 def deploy_keys(name, d):
     d.setVar('DEPLOY_KEYS_DIR', d.getVar('DEPLOY_DIR_IMAGE', True) + '/' + \
              d.getVar('SIGNING_MODEL', True) + '-keys')
@@ -377,6 +404,8 @@ def sanity_check_user_keys(name, may_exit, d):
         _ = check_mok_sb_user_keys(d)
     elif name == 'IMA':
         _ = check_ima_user_keys(d)
+    elif name == 'SYSTEM_TRUSTED':
+        _ = check_system_trusted_keys(d)
     else:
         _ = False
         may_exit = True
@@ -399,7 +428,7 @@ def set_keys_dir(name, d):
 
 python () {
     # XXX: the user key for rpm signing is necessary but not required.
-    for _ in ('UEFI_SB', 'MOK_SB', 'IMA'):
+    for _ in ('UEFI_SB', 'MOK_SB', 'IMA', 'SYSTEM_TRUSTED'):
         if d.getVar(_, True) != "1":
             continue
 

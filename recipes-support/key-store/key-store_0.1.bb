@@ -14,27 +14,47 @@ S = "${WORKDIR}"
 ALLOW_EMPTY_${PN} = "1"
 
 PACKAGES =+ " \
-             ${PN}-ima-pubkey \
+             ${PN}-system-trusted-cert \
+             ${PN}-ima-cert \
             "
 
+# Note any private key is not available if user key signing model used.
+PACKAGES_DYNAMIC += " \
+                     ${PN}-ima-privkey \
+                     ${PN}-system-trusted-privkey \
+                     ${PN}-rpm-pubkey \
+                    "
+
+KEY_DIR = "${sysconfdir}/keys"
 # For RPM verification
-PACKAGES_DYNAMIC += "${PN}-rpm-pubkey"
 RPM_KEY_DIR = "${sysconfdir}/pki/rpm-gpg"
 
-# Note IMA private key is not available if user key signing model used.
-PACKAGES_DYNAMIC += "${PN}-ima-privkey"
-KEY_DIR = "${sysconfdir}/keys"
+# For ${PN}-system-trusted-privkey
+SYSTEM_PRIV_KEY = "${KEY_DIR}/system_trusted_key.key"
+
+# For ${PN}-ima-privkey
 IMA_PRIV_KEY = "${KEY_DIR}/privkey_evm.pem"
-IMA_PUB_KEY = "${KEY_DIR}/pubkey_evm.pem"
-FILES_${PN}-ima-pubkey = "${IMA_PUB_KEY}"
-CONFFILES_${PN}-ima-pubkey = "${IMA_PUB_KEY}"
+
+# For ${PN}-system-trusted-cert
+SYSTEM_CERT = "${KEY_DIR}/system_trusted_key.pem"
+FILES_${PN}-system-trusted-cert = "${SYSTEM_CERT}"
+CONFFILES_${PN}-system-trusted-cert = "${SYSTEM_CERT}"
+
+# For ${PN}-ima-cert
+IMA_CERT = "${KEY_DIR}/x509_evm.der"
+FILES_${PN}-ima-cert = "${IMA_CERT}"
+CONFFILES_${PN}-ima-cert = "${IMA_CERT}"
 
 python () {
     if uks_signing_model(d) != "sample":
         return
 
+    pn = d.getVar('PN', True) + '-system-trusted-privkey'
+    d.setVar('PACKAGES_prepend', pn + ' ')
+    d.setVar('FILES_' + pn, d.getVar('SYSTEM_PRIV_KEY', True))
+    d.setVar('CONFFILES_' + pn, d.getVar('SYSTEM_PRIV_KEY', True))
+
     pn = d.getVar('PN', True) + '-ima-privkey'
-    # Ensure the private key file can be included in key-store-ima-privkey
     d.setVar('PACKAGES_prepend', pn + ' ')
     d.setVar('FILES_' + pn, d.getVar('IMA_PRIV_KEY', True))
     d.setVar('CONFFILES_' + pn, d.getVar('IMA_PRIV_KEY', True))
@@ -65,12 +85,26 @@ do_install() {
     fi
 
     install -d "${D}${KEY_DIR}"
-    key_dir="${@uks_ima_keys_dir(d)}"
-    install -m 0644 "$key_dir/ima_pubkey.pem" "${D}${IMA_PUB_KEY}"
+
+    key_dir="${@uks_system_trusted_keys_dir(d)}"
+    install -m 0644 "$key_dir/system_trusted_key.pem" "${D}${SYSTEM_CERT}"
 
     if [ "${@uks_signing_model(d)}" = "sample" ]; then
-        install -m 0400 "$key_dir/ima_privkey.pem" "${D}${IMA_PRIV_KEY}"
+        install -m 0400 "$key_dir/system_trusted_key.key" "${D}${SYSTEM_PRIV_KEY}"
     fi
+
+    key_dir="${@uks_ima_keys_dir(d)}"
+    install -m 0644 "$key_dir/x509_ima.der" "${D}${IMA_CERT}"
+
+    if [ "${@uks_signing_model(d)}" = "sample" ]; then
+        install -m 0400 "$key_dir/x509_ima.key" "${D}${IMA_PRIV_KEY}"
+    fi
+}
+
+SYSROOT_PREPROCESS_FUNCS += "key_store_sysroot_preprocess"
+
+key_store_sysroot_preprocess() {
+    sysroot_stage_dir "${D}${sysconfdir}" "${SYSROOT_DESTDIR}${sysconfdir}"
 }
 
 pkg_postinst_${PN}-rpm-pubkey() {

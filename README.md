@@ -13,8 +13,8 @@ to the creation of user key store, stored in such a layout:
 ```
 user-keys
 ├── ima_keys
-│   ├── ima_privkey.pem
-│   └── ima_pubkey.pem
+│   ├── x509_ima.der
+│   └── x509_ima.key
 ├── mok_sb_keys
 │   ├── shim_cert.key
 │   ├── shim_cert.pem
