@@ -79,7 +79,7 @@ create_uefi_sb_user_keys() {
         -keyout "$key_dir/DB.key" \
         -out "$key_dir/DB.csr"
 
-    openssl x509 -req -in "key_dir/DB.csr" \
+    openssl x509 -req -in "$key_dir/DB.csr" \
         -CA "$key_dir/KEK.pem" -CAkey "$key_dir/KEK.key" \
         -set_serial 1 -days 3650 -out "$key_dir/DB.pem"
 
