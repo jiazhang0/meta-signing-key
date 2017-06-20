@@ -46,6 +46,13 @@ FILES_${PN}-ima-cert = "${IMA_CERT}"
 CONFFILES_${PN}-ima-cert = "${IMA_CERT}"
 
 python () {
+    if bb.utils.contains('DISTRO_FEATURES', 'rpm-signing', True, False, d):
+        pn = d.getVar('PN', True) + '-rpm-pubkey'
+        d.setVar('PACKAGES_prepend', pn + ' ')
+        d.setVar('FILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + '/RPM-GPG-KEY-*', True))
+        d.setVar('CONFFILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + 'RPM-GPG-KEY-*', True))
+        d.appendVar('RDEPENDS_' + pn, ' rpm')
+
     if uks_signing_model(d) != "sample":
         return
 
@@ -58,12 +65,6 @@ python () {
     d.setVar('PACKAGES_prepend', pn + ' ')
     d.setVar('FILES_' + pn, d.getVar('IMA_PRIV_KEY', True))
     d.setVar('CONFFILES_' + pn, d.getVar('IMA_PRIV_KEY', True))
-
-    pn = d.getVar('PN', True) + '-rpm-pubkey'
-    d.setVar('PACKAGES_prepend', pn + ' ')
-    d.setVar('FILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + '/RPM-GPG-KEY-*', True))
-    d.setVar('CONFFILES_' + pn, d.getVar(d.getVar('RPM_KEY_DIR', True) + 'RPM-GPG-KEY-*', True))
-    d.appendVar('RDEPENDS_' + pn, ' rpm')
 }
 
 do_install() {
